@@ -43,13 +43,15 @@ public class WorldGravityPhysics extends Physics {
     public void update(Exploration game) {
         Set<Entity> entities = this.world.getEntities();
         for (Entity entity : entities) {
-            Tuple2d velocity = entity.getVelocity();
-            velocity.add(this.gravity);
-            if (Math.abs(velocity.x) > Math.abs(this.terminalVelocity.x)) {
-                velocity.x = this.terminalVelocity.x * Math.signum(velocity.x);
-            }
-            if (Math.abs(velocity.y) > Math.abs(this.terminalVelocity.y)) {
-                velocity.y = this.terminalVelocity.y * Math.signum(velocity.y);
+            if (!entity.isFlying()) {
+                Tuple2d velocity = entity.getVelocity();
+                velocity.add(this.gravity);
+                if (Math.abs(velocity.x) > Math.abs(this.terminalVelocity.x)) {
+                    velocity.x = this.terminalVelocity.x * Math.signum(velocity.x);
+                }
+                if (Math.abs(velocity.y) > Math.abs(this.terminalVelocity.y)) {
+                    velocity.y = this.terminalVelocity.y * Math.signum(velocity.y);
+                }
             }
         }
     }

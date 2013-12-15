@@ -43,6 +43,7 @@ public abstract class Entity {
     private Location location;
     private Vector2d velocity;
     private boolean isOnGround;
+    private boolean isFlying;
 
     public Entity(Color4f color, String name, double hp, double width, double height) {
         this.color = color;
@@ -230,5 +231,13 @@ public abstract class Entity {
 
     public boolean isOnGround() {
         return this.isOnGround;
+    }
+
+    public boolean isFlying() {
+        return this.isFlying;
+    }
+
+    public void setFlying(boolean isFlying) {
+        this.isFlying = isFlying;
     }
 }

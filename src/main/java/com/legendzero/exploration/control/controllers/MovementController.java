@@ -29,8 +29,9 @@ import org.lwjgl.input.Keyboard;
  */
 public class MovementController extends Controller {
 
-    private static final double maxX = 0.5;
-    private static final double maxY = 0.8;
+    private final double maxX = 0.25;
+    private final double maxY = 0.5;
+    private final double jumpY = 0.6;
 
     private final Set<Integer> keysPressed;
 
@@ -75,20 +76,36 @@ public class MovementController extends Controller {
         } else {
             dx -= 0.04 * Math.signum(dx);
         }
-        return Math.min(Math.max(dx, -maxX), maxX);
+        return Math.min(Math.max(dx, -this.maxX), this.maxX);
     }
 
     private double updateVertical() {
         double dy = this.player.getVelocity().y;
 
         if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
-            dy -= 0.1;
-        }
-        if (Keyboard.isKeyDown(Keyboard.KEY_W) && this.player.isOnGround()) {
-            dy = maxY;
+            dy -= 0.08;
+            dy = Math.min(Math.max(dy, -this.maxY), this.maxY);
         }
 
-        return Math.min(Math.max(dy, -maxY), maxY);
+        if (this.player.isFlying()) {
+
+            if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
+                dy += 0.08;
+                dy = Math.min(Math.max(dy, -this.maxY), this.maxY);
+            }
+
+            if (Math.abs(dy) < 0.01) {
+                dy = 0.0;
+            } else {
+                dy -= 0.04 * Math.signum(dy);
+            }
+        } else {
+            if (Keyboard.isKeyDown(Keyboard.KEY_W) && this.player.isOnGround()) {
+                dy = this.jumpY;
+            }
+        }
+
+        return dy;
     }
 
 }

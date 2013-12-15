@@ -20,6 +20,7 @@ import com.legendzero.exploration.Exploration;
 import com.legendzero.exploration.control.Controller;
 import com.legendzero.exploration.control.controllers.BlockController;
 import com.legendzero.exploration.control.controllers.MovementController;
+import com.legendzero.exploration.control.controllers.OptionController;
 import com.legendzero.exploration.control.controllers.ScreenShotController;
 import com.legendzero.exploration.control.controllers.ZoomController;
 import java.util.HashSet;
@@ -46,6 +47,7 @@ public class Player extends Entity {
         this.addController(new ZoomController(this));
         this.addController(new BlockController(this));
         this.addController(new ScreenShotController(this));
+        this.addController(new OptionController(this));
     }
 
     @Override
@@ -92,4 +94,6 @@ public class Player extends Entity {
         this.money -= amount;
         this.money = Math.max(0, money);
     }
+    
+
 }
