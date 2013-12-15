@@ -24,11 +24,19 @@ public class LifeNoise extends Noise {
 
     private final int iterations;
 
+    public LifeNoise() {
+        super();
+        this.iterations = 5;
+    }
     public LifeNoise(int iterations) {
         super();
         this.iterations = iterations;
     }
 
+    public LifeNoise(long seed) {
+        super(seed);
+        this.iterations = 5;
+    }
     public LifeNoise(long seed, int iterations) {
         super(seed);
         this.iterations = iterations;
@@ -37,34 +45,19 @@ public class LifeNoise extends Noise {
     public float[][] genNoiseMap(int width, int height) {
         float[][] data = new float[width][height];
 
-        fill(data, width, height, 0.4f);
+        fill(data, width, height, 0.3f);
 
         for(int i = 0; i < this.iterations; i++) {
-            data = iterate(data, width, height, 4, 3);
+            data = iterate(data, width, height, 3, 2);
         }
-        /*for (int x = 0; x < width; x++) {
-         data[x][0] = 1f;
-         data[x][height - 1] = 1f;
-         }
-
-         for (int y = 0; y < height; y++) {
-         data[0][y] = 1f;
-         data[width - 1][y] = 1f;
-         }
-
-         int iters = this.iterations;
-         while(--iters > 0) {
-         automate(data, width, height, 6, 3, iters);
-         }
-         automate(data, width, height, 5, 5, 1);*/
         return data;
     }
 
     private void fill(float[][] data, int width, int height, float initialChance) {
-        for (int x = 0; x < width; x++) {
+        for (int x = 1; x < width - 1; x++) {
             data[x] = new float[height];
-            for (int y = 0; y < height; y++) {
-                if (this.random.nextDouble() < initialChance) {
+            for (int y = 1; y < height - 1; y++) {
+                if (this.random.nextDouble() >= initialChance) {
                     data[x][y] = 1f;
                 }
             }
@@ -78,17 +71,17 @@ public class LifeNoise extends Noise {
             for (int y = 0; y < height; y++) {
                 int neighbors = getNearby(map, x, y, width, height);
                 
-                if(map[x][y] == 1f) {
+                if(map[x][y] == 0f) {
                     if(neighbors < death) {
-                        newMap[x][y] = 0f;
-                    } else {
                         newMap[x][y] = 1f;
+                    } else {
+                        newMap[x][y] = 0f;
                     }
                 } else {
                     if(neighbors > birth) {
-                        newMap[x][y] = 1f;
-                    } else {
                         newMap[x][y] = 0f;
+                    } else {
+                        newMap[x][y] = 1f;
                     }
                 }
             }
@@ -109,50 +102,11 @@ public class LifeNoise extends Noise {
 
                 if (nx < 0 || ny < 0 || nx >= width || ny >= height) {
                     count++;
-                } else if (map[nx][ny] == 1f) {
+                } else if (map[nx][ny] == 0f) {
                     count++;
                 }
             }
         }
         return count;
     }
-    /*public void automate(float[][] data, int width, int height, int born, int survive, int iterations) {
-     float[][] copy = new float[width][height];
-
-     for (int x = 0; x < width; x++) {
-     copy[x] = new float[height];
-     }
-
-     for (int i = 0; i < this.iterations; i++) {
-     for (int x = 0; x < width; x++) {
-     for (int y = 0; y < height; y++) {
-
-     boolean alive;
-     if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
-     alive = true;
-     } else {
-     float neighbors = 0f;
-
-     neighbors += data[x - 1][y - 1];
-     neighbors += data[x - 1][y];
-     neighbors += data[x - 1][y + 1];
-     neighbors += data[x][y - 1];
-     neighbors += data[x][y + 1];
-     neighbors += data[x + 1][y - 1];
-     neighbors += data[x + 1][y];
-     neighbors += data[x + 1][y + 1];
-
-     alive = (data[x][y] == 0f && neighbors >= born) || (data[x][y] == 1f && neighbors >= survive);
-     }
-
-     copy[x][y] = alive ? 1f : 0f;
-     }
-     }
-     }
-     for (int x = 0; x < width; x++) {
-     for (int y = 0; y < height; y++) {
-     data[x][y] = copy[x][y];
-     }
-     }
-     }*/
 }

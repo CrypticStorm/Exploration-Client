@@ -17,9 +17,11 @@
 package com.legendzero.exploration.render;
 
 import com.legendzero.exploration.Exploration;
+import com.legendzero.exploration.entity.Entity;
 import com.legendzero.exploration.entity.Player;
 import com.legendzero.exploration.util.Location;
 import com.legendzero.exploration.world.Tile;
+import com.legendzero.exploration.world.World;
 import javax.vecmath.Color4f;
 import javax.vecmath.Point2d;
 import javax.vecmath.Tuple2d;
@@ -44,13 +46,18 @@ public enum RenderState {
 
                 @Override
                 public void renderBackground(Exploration game) {
-                    Tile[][] map = game.getWorld().getMap();
+                    World world = game.getPlayer().getLocation().getWorld();
+                    Tile[][] map = world.getMap();
                     Player player = game.getPlayer();
                     Location location = game.getPlayer().getLocation();
 
+                    int xMin = Math.max((int) this.getMinX(), 0);
+                    int xMax = Math.min((int) Math.ceil(this.getMaxX()), world.getWidth());
+                    int yMin = Math.max((int) this.getMinY(), 0);
+                    int yMax = Math.min((int) Math.ceil(this.getMaxY()), world.getHeight());
                     GL11.glBegin(GL11.GL_QUADS);
-                    for (int i = Math.max((int) this.getMinX(), 0); i < Math.min(Math.ceil(this.getMaxX()), game.getWorld().getWidth()); i++) {
-                        for (int j = Math.max((int) this.getMinY(), 0); j < Math.min(Math.ceil(this.getMaxY()), game.getWorld().getHeight()); j++) {
+                    for (int i = xMin; i < xMax; i++) {
+                        for (int j = yMin; j < yMax; j++) {
                             Tile tile = map[i][j];
                             Color4f color = tile.getType().getColor();
                             GL11.glColor4f(color.x, color.y, color.z, color.w);
@@ -61,12 +68,20 @@ public enum RenderState {
                         }
                     }
 
-                    GL11.glColor3f(1f, 0f, 0f);
-                    GL11.glVertex2d(location.getX() - player.getWidth() / 2, location.getY());
-                    GL11.glVertex2d(location.getX() + player.getWidth() / 2, location.getY());
-                    GL11.glVertex2d(location.getX() + player.getWidth() / 2, location.getY() + player.getHeight());
-                    GL11.glVertex2d(location.getX() - player.getWidth() / 2, location.getY() + player.getHeight());
+                    for (Entity entity : world.getEntities()) {
+                        Location loc = entity.getLocation();
 
+                        if (xMin <= loc.getX() && loc.getX() <= xMax && yMin <= loc.getY() && loc.getY() <= yMax) {
+                            Color4f color = entity.getColor();
+
+                            GL11.glColor4f(color.x, color.y, color.z, color.w);
+                            GL11.glVertex2d(loc.getX() - entity.getWidth() / 2, loc.getY());
+                            GL11.glVertex2d(loc.getX() + entity.getWidth() / 2, loc.getY());
+                            GL11.glVertex2d(loc.getX() + entity.getWidth() / 2, loc.getY() + entity.getHeight());
+                            GL11.glVertex2d(loc.getX() - entity.getWidth() / 2, loc.getY() + entity.getHeight());
+
+                        }
+                    }
                     GL11.glEnd();
                 }
 

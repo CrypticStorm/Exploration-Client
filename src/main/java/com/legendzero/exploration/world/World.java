@@ -22,12 +22,13 @@ import com.legendzero.exploration.material.Material;
 import com.legendzero.exploration.material.Materials;
 import com.legendzero.exploration.noise.LifeNoise;
 import com.legendzero.exploration.noise.Noise;
-import com.legendzero.exploration.physics.WorldPhysics;
+import com.legendzero.exploration.physics.Physics;
+import com.legendzero.exploration.physics.WorldGravityPhysics;
+import com.legendzero.exploration.physics.WorldUpdatePhysics;
 import com.legendzero.exploration.util.Location;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-import javax.vecmath.Tuple2d;
 import javax.vecmath.Vector2d;
 
 /**
@@ -36,34 +37,35 @@ import javax.vecmath.Vector2d;
  */
 public class World {
 
-    private final Exploration game;
     private final Tile[][] tiles;
     private final long seed;
     private final int width;
     private final int height;
 
     private final Set<Entity> entities;
-    private final WorldPhysics physics;
-    private final Tuple2d gravity;
-    private final Tuple2d terminalVelocity;
+    private final Set<Physics> physics;
     private Location spawnLoc;
 
-    public World(Exploration game, int width, int height) {
-        this(game, new Random().nextLong(), width, height);
+    public World(int width, int height, Vector2d gravity, Vector2d terminalVelocity) {
+        this(new Random().nextLong(), width, height, gravity, terminalVelocity);
     }
 
-    public World(Exploration game, long seed, int width, int height) {
-        this.game = game;
+    public World(long seed, int width, int height, Vector2d gravity, Vector2d terminalVelocity) {
         this.seed = seed;
         this.width = width;
         this.height = height;
         this.spawnLoc = new Location(this, this.width / 2.0, this.height / 2.0);
         this.tiles = generateWorld();
         this.entities = new HashSet<Entity>();
-        this.physics = new WorldPhysics(this);
-        this.gravity = new Vector2d(0.0, -0.1);
-        this.terminalVelocity = new Vector2d(1.0, -1.0);
-        this.game.addPhysicsEngine(physics);
+        this.physics = new HashSet<Physics>();
+        this.physics.add(new WorldUpdatePhysics(this));
+        this.physics.add(new WorldGravityPhysics(this, gravity, terminalVelocity));
+    }
+
+    public void update(Exploration game) {
+        for(Physics physic : this.physics) {
+            physic.update(game);
+        }
     }
 
     public int getWidth() {
@@ -72,14 +74,6 @@ public class World {
 
     public int getHeight() {
         return this.height;
-    }
-
-    public Tuple2d getGravity() {
-        return this.gravity;
-    }
-
-    public Tuple2d getTerminalVelocity() {
-        return this.terminalVelocity;
     }
 
     public Tile[][] getMap() {
@@ -122,7 +116,7 @@ public class World {
     }
 
     private Tile[][] generateWorld() {
-        Noise noise = new LifeNoise(this.seed, 6);
+        Noise noise = new LifeNoise(this.seed);
         float[][] noiseMap = noise.genNoiseMap(this.width, this.height);
         Tile[][] tileMap = new Tile[this.width][this.height];
 

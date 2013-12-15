@@ -21,6 +21,7 @@ import com.legendzero.exploration.util.Location;
 import com.legendzero.exploration.world.World;
 import java.util.LinkedList;
 import java.util.List;
+import javax.vecmath.Color4f;
 import javax.vecmath.Point2d;
 import javax.vecmath.Tuple2d;
 import javax.vecmath.Vector2d;
@@ -31,21 +32,22 @@ import javax.vecmath.Vector2d;
  */
 public abstract class Entity {
 
+    private final Color4f color;
     private final String name;
     private final double MAX_HEALTH;
     private double health;
 
-    private double width;
-    private double height;
+    private final double width;
+    private final double height;
 
     private Location location;
     private Vector2d velocity;
     private boolean isOnGround;
 
-    public Entity(String name, double hp, double width, double height) {
+    public Entity(Color4f color, String name, double hp, double width, double height) {
+        this.color = color;
         this.name = name;
-        this.MAX_HEALTH = hp;
-        this.health = hp;
+        this.MAX_HEALTH = this.health = hp;
         this.width = width;
         this.height = height;
         this.velocity = new Vector2d(0.0, 0.0);
@@ -54,11 +56,6 @@ public abstract class Entity {
 
     public void update(Exploration game) {
         World world = this.location.getWorld();
-
-        this.velocity.add(world.getGravity());
-        if (this.velocity.y < -1.0) {
-            this.velocity.y = -1.0;
-        }
 
         double vx = this.velocity.x;
         double vy = this.velocity.y;
@@ -193,6 +190,10 @@ public abstract class Entity {
 
     public void setVelocity(Vector2d velocity) {
         this.velocity = velocity;
+    }
+
+    public Color4f getColor() {
+        return this.color;
     }
 
     public String getName() {

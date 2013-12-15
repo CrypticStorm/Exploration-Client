@@ -30,7 +30,7 @@ import org.lwjgl.input.Keyboard;
 public class MovementController extends Controller {
 
     private static final double maxX = 0.5;
-    private static final double maxY = 1.0;
+    private static final double maxY = 0.8;
 
     private final Set<Integer> keysPressed;
 
@@ -62,40 +62,30 @@ public class MovementController extends Controller {
 
     private double updateHorizontal() {
         double dx = this.player.getVelocity().x;
-        boolean mx = false;
 
-        if (this.keysPressed.contains(Keyboard.KEY_A)) {
-            dx -= 0.01;
-            mx = !mx;
+        if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
+            dx -= 0.08;
         }
-        if (this.keysPressed.contains(Keyboard.KEY_D)) {
-            dx += 0.01;
-            mx = !mx;
-        }
-        if (!mx) {
-            if (Math.abs(dx) < 0.01) {
-                dx = 0.0;
-            } else {
-                dx -= 0.025 * Math.signum(dx);
-            }
+        if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
+            dx += 0.08;
         }
 
+        if (Math.abs(dx) < 0.01) {
+            dx = 0.0;
+        } else {
+            dx -= 0.04 * Math.signum(dx);
+        }
         return Math.min(Math.max(dx, -maxX), maxX);
     }
 
     private double updateVertical() {
         double dy = this.player.getVelocity().y;
 
-        if (this.keysPressed.contains(Keyboard.KEY_S)) {
+        if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
             dy -= 0.1;
         }
-        if (this.keysPressed.contains(Keyboard.KEY_W) && this.player.isOnGround()) {
+        if (Keyboard.isKeyDown(Keyboard.KEY_W) && this.player.isOnGround()) {
             dy = maxY;
-        }
-        if (Math.abs(dy) < 0.01) {
-            dy = 0.0;
-        } else {
-            dy -= 0.01 * Math.signum(dy);
         }
 
         return Math.min(Math.max(dy, -maxY), maxY);

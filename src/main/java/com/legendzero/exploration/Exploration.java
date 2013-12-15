@@ -17,14 +17,14 @@
 package com.legendzero.exploration;
 
 import com.legendzero.exploration.entity.Player;
-import com.legendzero.exploration.physics.Physics;
 import com.legendzero.exploration.render.RenderState;
 import com.legendzero.exploration.world.World;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import javax.vecmath.Vector2d;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -38,14 +38,13 @@ public class Exploration {
     private final int viewSize;
 
     private Player player;
-    private World world;
+    private final List<World> worlds;
     private RenderState state;
-    private Set<Physics> physicsEngines;
 
     private Exploration() throws LWJGLException {
         this.viewSize = 250;
         this.state = RenderState.GAME;
-        this.physicsEngines = new HashSet<Physics>();
+        this.worlds = new ArrayList<World>();
 
         this.initDisplay();
         this.initGame();
@@ -60,8 +59,12 @@ public class Exploration {
         return this.player;
     }
 
-    public World getWorld() {
-        return this.world;
+    public List<World> getWorlds() {
+        return this.worlds;
+    }
+
+    public void addWorld(World world) {
+        this.worlds.add(world);
     }
 
     public RenderState getRenderState() {
@@ -70,10 +73,6 @@ public class Exploration {
 
     public int getViewSize() {
         return this.viewSize;
-    }
-
-    public void addPhysicsEngine(Physics physics) {
-        this.physicsEngines.add(physics);
     }
 
     private void initDisplay() {
@@ -89,8 +88,9 @@ public class Exploration {
 
     private void initGame() {
         this.player = new Player("CrypticStorm");
-        this.world = new World(this, 100, 100);
-        this.world.spawnEntity(player, this.world.getSpawnLocation().add(0.5, 0));
+        World world = new World(100, 100, new Vector2d(0.0, -0.1), new Vector2d(1.0, 1.0));
+        world.spawnEntity(player, world.getSpawnLocation().add(0.5, 0));
+        this.worlds.add(world);
     }
 
     private void initControls() {
@@ -99,8 +99,8 @@ public class Exploration {
 
     private void runGame() {
         while (!Display.isCloseRequested()) {
-            for(Physics physics : this.physicsEngines) {
-                physics.update(this);
+            for(World world : this.worlds) {
+                world.update(this);
             }
             state.render(this);
             Display.update();

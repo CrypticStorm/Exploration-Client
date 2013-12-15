@@ -20,9 +20,11 @@ import com.legendzero.exploration.Exploration;
 import com.legendzero.exploration.control.Controller;
 import com.legendzero.exploration.control.controllers.BlockController;
 import com.legendzero.exploration.control.controllers.MovementController;
+import com.legendzero.exploration.control.controllers.ScreenShotController;
 import com.legendzero.exploration.control.controllers.ZoomController;
 import java.util.HashSet;
 import java.util.Set;
+import javax.vecmath.Color4f;
 
 /**
  *
@@ -33,14 +35,17 @@ public class Player extends Entity {
     private final Set<Controller> controllers;
     private final double defaultViewSize;
     private double viewSize;
+    private int money;
 
     public Player(String name) {
-        super(name, 100.0, 0.6, 0.8);
+        super(new Color4f(1.0f, 0.0f, 0.0f, 1.0f), name, 100.0, 0.6, 0.8);
         this.controllers = new HashSet<Controller>();
         this.defaultViewSize = this.viewSize = 100;
+        this.money = 0;
         this.addController(new MovementController(this));
         this.addController(new ZoomController(this));
         this.addController(new BlockController(this));
+        this.addController(new ScreenShotController(this));
     }
 
     @Override
@@ -69,5 +74,22 @@ public class Player extends Entity {
 
     public void setViewSize(double viewSize) {
         this.viewSize = viewSize;
+    }
+    
+    public int getMoney() {
+        return this.money;
+    }
+    
+    public void setMoney(int amount) {
+        this.money = amount;
+    }
+    
+    public void addMoney(int amount) {
+        this.money += amount;
+    }
+    
+    public void takeMoney(int amount) {
+        this.money -= amount;
+        this.money = Math.max(0, money);
     }
 }

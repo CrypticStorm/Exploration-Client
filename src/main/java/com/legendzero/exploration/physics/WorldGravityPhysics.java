@@ -20,26 +20,36 @@ import com.legendzero.exploration.Exploration;
 import com.legendzero.exploration.entity.Entity;
 import com.legendzero.exploration.world.World;
 import java.util.Set;
+import javax.vecmath.Tuple2d;
+import javax.vecmath.Vector2d;
 
 /**
  *
  * @author CrypticStorm
  */
-public class WorldPhysics extends Physics {
+public class WorldGravityPhysics extends Physics {
 
     private final World world;
-    
-    public WorldPhysics(World world) {
+    private final Vector2d gravity;
+    private final Vector2d terminalVelocity;
+
+    public WorldGravityPhysics(World world, Vector2d gravity, Vector2d terminalVelocity) {
         this.world = world;
+        this.gravity = gravity;
+        this.terminalVelocity = terminalVelocity;
     }
 
     @Override
     public void update(Exploration game) {
         Set<Entity> entities = this.world.getEntities();
-        for(Entity entity : entities) {
-            entity.update(game);
-            if(!entity.isAlive()) {
-                this.world.removeEntity(entity);
+        for (Entity entity : entities) {
+            Tuple2d velocity = entity.getVelocity();
+            velocity.add(this.gravity);
+            if (Math.abs(velocity.x) > Math.abs(this.terminalVelocity.x)) {
+                velocity.x = this.terminalVelocity.x * Math.signum(velocity.x);
+            }
+            if (Math.abs(velocity.y) > Math.abs(this.terminalVelocity.y)) {
+                velocity.y = this.terminalVelocity.y * Math.signum(velocity.y);
             }
         }
     }
