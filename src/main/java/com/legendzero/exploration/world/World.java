@@ -20,7 +20,8 @@ import com.legendzero.exploration.Exploration;
 import com.legendzero.exploration.entity.Entity;
 import com.legendzero.exploration.material.Material;
 import com.legendzero.exploration.material.Materials;
-import com.legendzero.exploration.noise.PerlinNoise;
+import com.legendzero.exploration.noise.LifeNoise;
+import com.legendzero.exploration.noise.Noise;
 import com.legendzero.exploration.physics.WorldPhysics;
 import com.legendzero.exploration.util.Location;
 import java.util.HashSet;
@@ -121,8 +122,8 @@ public class World {
     }
 
     private Tile[][] generateWorld() {
-        PerlinNoise noise = new PerlinNoise(this.seed);
-        float[][] noiseMap = noise.genNoiseMap(this.width, this.height, 5, 1f, 1f);
+        Noise noise = new LifeNoise(this.seed, 6);
+        float[][] noiseMap = noise.genNoiseMap(this.width, this.height);
         Tile[][] tileMap = new Tile[this.width][this.height];
 
         for (int i = 0; i < this.width; i++) {

@@ -16,33 +16,34 @@
  */
 package com.legendzero.exploration.noise;
 
-import java.util.Random;
 import javax.vecmath.Vector2f;
 
 /**
  *
  * @author CrypticStorm
  */
-public class PerlinNoise {
+public class PerlinNoise extends Noise {
 
-    private final Random random;
     private final int[] permutation;
     private final Vector2f[] gradients;
 
-    public PerlinNoise() {
-        this.random = new Random();
+    private final int octaves;
+    private final float persistence;
+
+    public PerlinNoise(int octaves, float persistence) {
+        super();
+        this.octaves = octaves;
+        this.persistence = persistence;
         this.permutation = this.calculatePermutation(256);
         this.gradients = this.calculateGradients(256);
     }
 
-    public PerlinNoise(long seed) {
-        this.random = new Random(seed);
+    public PerlinNoise(int octaves, float persistence, long seed) {
+        super(seed);
+        this.octaves = octaves;
+        this.persistence = persistence;
         this.permutation = this.calculatePermutation(256);
         this.gradients = this.calculateGradients(256);
-    }
-
-    public void setSeed(long seed) {
-        this.random.setSeed(seed);
     }
 
     private int[] calculatePermutation(int length) {
@@ -108,7 +109,8 @@ public class PerlinNoise {
         return Math.max(Math.min(total, 1f), -1f);
     }
 
-    public float[][] genNoiseMap(int width, int height, int octaves, float persistence, float amplitude) {
+    @Override
+    public float[][] genNoiseMap(int width, int height) {
         float[][] data = new float[width][height];
 
         for (int i = 0; i < data.length; i++) {
@@ -119,8 +121,9 @@ public class PerlinNoise {
         float max = Float.MIN_VALUE;
 
         float frequency = 0.5f;
+        float amplitude = 1f;
 
-        for (int octave = 0; octave < octaves; octave++) {
+        for (int octave = 0; octave < this.octaves; octave++) {
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
                     float noise = this.genNoise(x * frequency * 1f / width, y * frequency * 1f / height) * amplitude;

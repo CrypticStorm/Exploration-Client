@@ -89,7 +89,7 @@ public class Exploration {
 
     private void initGame() {
         this.player = new Player("CrypticStorm");
-        this.world = new World(this, 1000, 1000);
+        this.world = new World(this, 100, 100);
         this.world.spawnEntity(player, this.world.getSpawnLocation().add(0.5, 0));
     }
 
