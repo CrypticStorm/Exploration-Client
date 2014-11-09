@@ -16,8 +16,9 @@
  */
 package com.legendzero.exploration.physics;
 
-import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.entity.Entity;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.api.entity.IEntity;
+import com.legendzero.exploration.api.physics.IPhysics;
 import com.legendzero.exploration.world.World;
 import java.util.Set;
 import javax.vecmath.Tuple2d;
@@ -27,7 +28,7 @@ import javax.vecmath.Vector2d;
  *
  * @author CrypticStorm
  */
-public class WorldGravityPhysics extends Physics {
+public class WorldGravityPhysics implements IPhysics {
 
     private final World world;
     private final Vector2d gravity;
@@ -40,9 +41,9 @@ public class WorldGravityPhysics extends Physics {
     }
 
     @Override
-    public void update(Exploration game) {
-        Set<Entity> entities = this.world.getEntities();
-        for (Entity entity : entities) {
+    public void update(IExploration game) {
+        Set<IEntity> entities = this.world.getEntities();
+        for (IEntity entity : entities) {
             if (!entity.isFlying()) {
                 Tuple2d velocity = entity.getVelocity();
                 velocity.add(this.gravity);

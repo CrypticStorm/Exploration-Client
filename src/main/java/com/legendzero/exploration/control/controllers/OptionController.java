@@ -16,10 +16,10 @@
  */
 package com.legendzero.exploration.control.controllers;
 
-import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.control.Controller;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.api.option.OptionToggle;
+import com.legendzero.exploration.control.AbstractController;
 import com.legendzero.exploration.entity.Player;
-import com.legendzero.exploration.option.OptionToggle;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,28 +30,29 @@ import org.lwjgl.input.Keyboard;
  *
  * @author CrypticStorm
  */
-public class OptionController extends Controller {
+public class OptionController extends AbstractController {
 
     private final Set<Integer> keysPressed;
     private final Map<Integer, OptionToggle> options;
 
     public OptionController(Player player) {
         super(player);
-        this.keysPressed = new HashSet<Integer>();
-        this.options = new HashMap<Integer, OptionToggle>();
-        this.options.put(Keyboard.KEY_F, new OptionToggle() {
-            public void update(Player player) {
-                player.setFlying(!player.isFlying());
-            }
-        });
+        this.keysPressed = new HashSet<>();
+        this.options = new HashMap<>();
+        this.options.put(Keyboard.KEY_F, (game) ->
+                player.setFlying(!player.isFlying()));
+        this.options.put(Keyboard.KEY_P, (game) ->
+                System.out.println("(" + player.getLocation().getX() + ", " + player.getLocation().getY() + ")"));
+        this.options.put(Keyboard.KEY_ESCAPE, IExploration::stop);
+
     }
 
     @Override
-    public void update(Exploration game) {
+    public void update(IExploration game) {
         for (Integer key : options.keySet()) {
             if (Keyboard.isKeyDown(key) && !this.keysPressed.contains(key)) {
                 this.keysPressed.add(key);
-                options.get(key).update(this.player);
+                options.get(key).update(game);
             } else if (!Keyboard.isKeyDown(key) && this.keysPressed.contains(key)) {
                 this.keysPressed.remove(key);
             }

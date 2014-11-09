@@ -14,15 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.legendzero.exploration.physics;
+package com.legendzero.exploration.materials;
 
-import com.legendzero.exploration.Exploration;
+import com.legendzero.exploration.util.material.Material;
+import com.legendzero.exploration.util.Materials;
+import javax.vecmath.Color4f;
 
 /**
  *
  * @author CrypticStorm
  */
-public abstract class Physics {
-    
-    public abstract void update(Exploration game);
+public class MaterialAir extends Material {
+
+    static {
+        Materials.addMaterial(new MaterialAir());
+    }
+
+    public MaterialAir() {
+        super(new Color4f(1f, 1f, 1f, 1f));
+    }
+
+    @Override
+    public boolean isSolid() {
+        return false;
+    }
+
+    @Override
+    public String getName() {
+        return "Air";
+    }
+
+    @Override
+    public String getTextureFile() {
+        return "air";
+    }
 }

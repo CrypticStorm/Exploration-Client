@@ -17,11 +17,12 @@
 package com.legendzero.exploration.render;
 
 import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.entity.Entity;
-import com.legendzero.exploration.entity.Player;
+import com.legendzero.exploration.api.entity.IEntity;
+import com.legendzero.exploration.api.entity.IPlayer;
+import com.legendzero.exploration.api.world.ITile;
+import com.legendzero.exploration.api.world.IWorld;
+import com.legendzero.exploration.util.AABB;
 import com.legendzero.exploration.util.Location;
-import com.legendzero.exploration.world.Tile;
-import com.legendzero.exploration.world.World;
 import javax.vecmath.Color4f;
 import javax.vecmath.Point2d;
 import javax.vecmath.Tuple2d;
@@ -37,28 +38,31 @@ public enum RenderState {
     GAME {
                 @Override
                 public void renderForeground(Exploration game) {
-                    double width = game.getPlayer().getViewSize();
-                    double height = game.getPlayer().getViewSize() * Display.getHeight() / (double) Display.getWidth();
-                    Location loc = game.getPlayer().getLocation();
+                    IPlayer player = game.getPlayer();
+                    double width = player.getViewSize();
+                    double height = width * Display.getHeight() / (double) Display.getWidth();
+                    Location loc = player.getLocation();
                     this.setCoords(new Point2d(loc.getX() - width / 2, loc.getY() - height / 2), new Point2d(loc.getX() + width / 2, loc.getY() + height / 2));
-                    GL11.glOrtho(this.getMinX(), this.getMaxX(), this.getMinY(), this.getMaxY(), 1, -1);
+                    AABB aabb = this.getAABB();
+                    GL11.glOrtho(aabb.getLeft(), aabb.getRight(), aabb.getBottom(), aabb.getTop(), 1, -1);
+
                 }
 
                 @Override
                 public void renderBackground(Exploration game) {
-                    World world = game.getPlayer().getLocation().getWorld();
-                    Tile[][] map = world.getMap();
-                    Player player = game.getPlayer();
-                    Location location = game.getPlayer().getLocation();
+                    //game.getFont().drawString(0, game.getFont().getHeight() * 10, "TESTING", 1.5f, 1.5f);
+                    IWorld world = game.getPlayer().getLocation().getWorld();
+                    ITile[][] map = world.getMap();
 
-                    int xMin = Math.max((int) this.getMinX(), 0);
-                    int xMax = Math.min((int) Math.ceil(this.getMaxX()), world.getWidth());
-                    int yMin = Math.max((int) this.getMinY(), 0);
-                    int yMax = Math.min((int) Math.ceil(this.getMaxY()), world.getHeight());
+                    AABB aabb = this.getAABB();
+                    int xMin = Math.max((int) aabb.getLeft(), 0);
+                    int xMax = Math.min((int) Math.ceil(aabb.getRight()), world.getWidth());
+                    int yMin = Math.max((int) aabb.getBottom(), 0);
+                    int yMax = Math.min((int) Math.ceil(aabb.getTop()), world.getHeight());
                     GL11.glBegin(GL11.GL_QUADS);
                     for (int i = xMin; i < xMax; i++) {
                         for (int j = yMin; j < yMax; j++) {
-                            Tile tile = map[i][j];
+                            ITile tile = map[i][j];
                             Color4f color = tile.getType().getColor();
                             GL11.glColor4f(color.x, color.y, color.z, color.w);
                             GL11.glVertex2i(i, j);
@@ -68,29 +72,26 @@ public enum RenderState {
                         }
                     }
 
-                    for (Entity entity : world.getEntities()) {
+                    for (IEntity entity : world.getEntities()) {
                         Location loc = entity.getLocation();
 
-                        if (xMin <= loc.getX() && loc.getX() <= xMax && yMin <= loc.getY() && loc.getY() <= yMax) {
-                            Color4f color = entity.getColor();
+                        //if (xMin <= loc.getX() && loc.getX() <= xMax && yMin <= loc.getY() && loc.getY() <= yMax) {
+                        Color4f color = entity.getColor();
 
-                            GL11.glColor4f(color.x, color.y, color.z, color.w);
-                            GL11.glVertex2d(loc.getX() - entity.getWidth() / 2, loc.getY());
-                            GL11.glVertex2d(loc.getX() + entity.getWidth() / 2, loc.getY());
-                            GL11.glVertex2d(loc.getX() + entity.getWidth() / 2, loc.getY() + entity.getHeight());
-                            GL11.glVertex2d(loc.getX() - entity.getWidth() / 2, loc.getY() + entity.getHeight());
+                        GL11.glColor4f(color.x, color.y, color.z, color.w);
+                        GL11.glVertex2d(loc.getX() - entity.getWidth() / 2, loc.getY());
+                        GL11.glVertex2d(loc.getX() + entity.getWidth() / 2, loc.getY());
+                        GL11.glVertex2d(loc.getX() + entity.getWidth() / 2, loc.getY() + entity.getHeight());
+                        GL11.glVertex2d(loc.getX() - entity.getWidth() / 2, loc.getY() + entity.getHeight());
 
-                        }
+                        //}
                     }
                     GL11.glEnd();
                 }
 
             };
 
-    private double minX;
-    private double maxX;
-    private double minY;
-    private double maxY;
+    private AABB aabb;
 
     public void render(Exploration game) {
         GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -103,26 +104,11 @@ public enum RenderState {
     }
 
     public void setCoords(Tuple2d min, Tuple2d max) {
-        this.minX = min.x;
-        this.maxX = max.x;
-        this.minY = min.y;
-        this.maxY = max.y;
+        this.aabb = new AABB(min, max);
     }
 
-    public double getMinX() {
-        return this.minX;
-    }
-
-    public double getMaxX() {
-        return this.maxX;
-    }
-
-    public double getMinY() {
-        return this.minY;
-    }
-
-    public double getMaxY() {
-        return this.maxY;
+    public AABB getAABB() {
+        return this.aabb;
     }
 
     public abstract void renderForeground(Exploration game);

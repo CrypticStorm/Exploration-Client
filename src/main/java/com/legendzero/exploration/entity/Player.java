@@ -16,8 +16,9 @@
  */
 package com.legendzero.exploration.entity;
 
-import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.control.Controller;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.api.control.IController;
+import com.legendzero.exploration.api.entity.IPlayer;
 import com.legendzero.exploration.control.controllers.BlockController;
 import com.legendzero.exploration.control.controllers.MovementController;
 import com.legendzero.exploration.control.controllers.OptionController;
@@ -31,38 +32,40 @@ import javax.vecmath.Color4f;
  *
  * @author CrypticStorm
  */
-public class Player extends Entity {
+public class Player extends Entity implements IPlayer {
 
-    private final Set<Controller> controllers;
+    private final Set<IController> controllers;
     private final double defaultViewSize;
     private double viewSize;
     private int money;
 
-    public Player(String name) {
+    public Player(String name, boolean controlled) {
         super(new Color4f(1.0f, 0.0f, 0.0f, 1.0f), name, 100.0, 0.6, 0.8);
-        this.controllers = new HashSet<Controller>();
+        this.controllers = new HashSet<>();
         this.defaultViewSize = this.viewSize = 100;
         this.money = 0;
-        this.addController(new MovementController(this));
-        this.addController(new ZoomController(this));
-        this.addController(new BlockController(this));
-        this.addController(new ScreenShotController(this));
-        this.addController(new OptionController(this));
+        if (controlled) {
+            this.addController(new MovementController(this));
+            this.addController(new ZoomController(this));
+            this.addController(new BlockController(this));
+            this.addController(new ScreenShotController(this));
+            this.addController(new OptionController(this));
+        }
     }
 
     @Override
-    public void update(Exploration game) {
-        for(Controller controller : this.controllers) {
+    public void update(IExploration game) {
+        for (IController controller : this.controllers) {
             controller.update(game);
         }
         super.update(game);
     }
 
-    public final Set<Controller> getControllers() {
+    public final Set<IController> getControllers() {
         return this.controllers;
     }
 
-    public final void addController(Controller controller) {
+    public final void addController(IController controller) {
         this.controllers.add(controller);
     }
 
@@ -77,23 +80,22 @@ public class Player extends Entity {
     public void setViewSize(double viewSize) {
         this.viewSize = viewSize;
     }
-    
+
     public int getMoney() {
         return this.money;
     }
-    
+
     public void setMoney(int amount) {
         this.money = amount;
     }
-    
+
     public void addMoney(int amount) {
         this.money += amount;
     }
-    
+
     public void takeMoney(int amount) {
         this.money -= amount;
         this.money = Math.max(0, money);
     }
-    
 
 }

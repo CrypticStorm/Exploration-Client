@@ -16,8 +16,9 @@
  */
 package com.legendzero.exploration.physics;
 
-import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.entity.Entity;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.api.entity.IEntity;
+import com.legendzero.exploration.api.physics.IPhysics;
 import com.legendzero.exploration.world.World;
 import java.util.Set;
 
@@ -25,7 +26,7 @@ import java.util.Set;
  *
  * @author CrypticStorm
  */
-public class WorldUpdatePhysics extends Physics {
+public class WorldUpdatePhysics implements IPhysics {
 
     private final World world;
     
@@ -34,9 +35,9 @@ public class WorldUpdatePhysics extends Physics {
     }
 
     @Override
-    public void update(Exploration game) {
-        Set<Entity> entities = this.world.getEntities();
-        for(Entity entity : entities) {
+    public void update(IExploration game) {
+        Set<IEntity> entities = this.world.getEntities();
+        for(IEntity entity : entities) {
             entity.update(game);
             if(!entity.isAlive()) {
                 this.world.removeEntity(entity);

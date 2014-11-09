@@ -16,13 +16,14 @@
  */
 package com.legendzero.exploration.noise;
 
+import com.legendzero.exploration.api.noise.INoise;
 import java.util.Random;
 
 /**
  *
  * @author CrypticStorm
  */
-public abstract class Noise {
+public abstract class Noise implements INoise {
 
     protected final Random random;
 
@@ -36,6 +37,4 @@ public abstract class Noise {
     public void setSeed(long seed) {
         this.random.setSeed(seed);
     }
-    
-    public abstract float[][] genNoiseMap(int width, int height);
 }

@@ -16,8 +16,8 @@
  */
 package com.legendzero.exploration.control.controllers;
 
-import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.control.Controller;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.control.AbstractController;
 import com.legendzero.exploration.entity.Player;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -36,7 +36,7 @@ import org.lwjgl.opengl.GL11;
  *
  * @author CrypticStorm
  */
-public class ScreenShotController extends Controller {
+public class ScreenShotController extends AbstractController {
 
     private final DateFormat format;
     private final File folder;
@@ -47,12 +47,14 @@ public class ScreenShotController extends Controller {
         this.format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'");
         this.folder = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath() + File.separator + "screenshots");
         if (!folder.exists()) {
-            folder.mkdir();
+            if(!folder.mkdir()) {
+                System.err.println("Error creating screenshot directory: " + folder);
+            }
         }
     }
 
     @Override
-    public void update(Exploration game) {
+    public void update(IExploration game) {
         if (Keyboard.isKeyDown(Keyboard.KEY_F2) && System.currentTimeMillis() - this.lastScreenshot >= 1000) {
             this.lastScreenshot = System.currentTimeMillis();
             GL11.glReadBuffer(GL11.GL_FRONT);
@@ -79,8 +81,11 @@ public class ScreenShotController extends Controller {
             }
 
             try {
-                file.createNewFile();
-                ImageIO.write(image, type, file);
+                if(file.createNewFile()) {
+                    ImageIO.write(image, type, file);
+                } else {
+                    System.err.println("File already exists! Ignoring screenshot.");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

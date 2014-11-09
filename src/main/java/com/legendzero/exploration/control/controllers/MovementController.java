@@ -16,8 +16,8 @@
  */
 package com.legendzero.exploration.control.controllers;
 
-import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.control.Controller;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.control.AbstractController;
 import com.legendzero.exploration.entity.Player;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,21 +27,21 @@ import org.lwjgl.input.Keyboard;
  *
  * @author CrypticStorm
  */
-public class MovementController extends Controller {
+public class MovementController extends AbstractController {
 
     private final double maxX = 0.25;
-    private final double maxY = 0.5;
-    private final double jumpY = 0.6;
+    private final double maxY = 0.25;
+    private final double jumpY = 0.75;
 
     private final Set<Integer> keysPressed;
 
     public MovementController(Player player) {
         super(player);
-        this.keysPressed = new HashSet<Integer>();
+        this.keysPressed = new HashSet<>();
     }
 
     @Override
-    public void update(Exploration game) {
+    public void update(IExploration game) {
         this.updateKeys();
 
         double dx = this.updateHorizontal();
@@ -82,12 +82,11 @@ public class MovementController extends Controller {
     private double updateVertical() {
         double dy = this.player.getVelocity().y;
 
-        if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
-            dy -= 0.08;
-            dy = Math.min(Math.max(dy, -this.maxY), this.maxY);
-        }
-
         if (this.player.isFlying()) {
+            if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
+                dy -= 0.08;
+                dy = Math.min(Math.max(dy, -this.maxY), this.maxY);
+            }
 
             if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
                 dy += 0.08;

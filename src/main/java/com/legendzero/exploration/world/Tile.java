@@ -16,28 +16,54 @@
  */
 package com.legendzero.exploration.world;
 
-import com.legendzero.exploration.material.Material;
+import com.legendzero.exploration.api.world.ITile;
+import com.legendzero.exploration.util.Direction;
 import com.legendzero.exploration.util.Location;
+import com.legendzero.exploration.util.material.Material;
 
 /**
  *
  * @author CrypticStorm
  */
-public class Tile {
+public class Tile implements ITile {
 
+    private boolean[] adjacencies;
     private Material type;
     private Location location;
 
     public Tile(Material type, Location location) {
         this.type = type;
         this.location = location;
+        this.adjacencies = new boolean[Direction.values().length];
     }
 
     public Material getType() {
         return this.type;
     }
-    
+
+    public void setType(Material type) {
+        this.type = type;
+    }
+
+    public ITile getAdjancent(Direction dir) {
+        return this.location.getWorld().getTile((int) this.location.getX() + dir.getDX(), (int) this.location.getY() + dir.getDY());
+    }
+
+    public boolean getAdjacency(Direction dir) {
+        return this.adjacencies[dir.ordinal()];
+    }
+
+    public void setAdjacency(Direction dir, boolean value) {
+        this.adjacencies[dir.ordinal()] = value;
+    }
+
     public Location getLocation() {
         return this.location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location.copy();
+        this.location.setX(Math.round(location.getX()));
+        this.location.setY(Math.round(location.getY()));
     }
 }

@@ -16,13 +16,15 @@
  */
 package com.legendzero.exploration.entity;
 
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.api.entity.IItem;
 import com.legendzero.exploration.util.ItemStack;
 
 /**
  *
  * @author CrypticStorm
  */
-public class Item extends Entity {
+public class Item extends Entity implements IItem {
 
     private ItemStack itemStack;
 
@@ -37,5 +39,10 @@ public class Item extends Entity {
     
     public void setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack;
+    }
+
+    @Override
+    public void update(IExploration game) {
+        
     }
 }

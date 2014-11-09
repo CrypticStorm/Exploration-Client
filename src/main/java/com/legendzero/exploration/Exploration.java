@@ -16,13 +16,24 @@
  */
 package com.legendzero.exploration;
 
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.api.element.ElementManager;
+import com.legendzero.exploration.api.element.IElementManager;
+import com.legendzero.exploration.api.element.loader.ElementLoader;
+import com.legendzero.exploration.api.entity.IPlayer;
+import com.legendzero.exploration.api.font.ITrueTypeFont;
+import com.legendzero.exploration.api.world.IWorld;
 import com.legendzero.exploration.entity.Player;
+import com.legendzero.exploration.font.TrueTypeFont;
+import com.legendzero.exploration.materials.DefaultMaterials;
 import com.legendzero.exploration.render.RenderState;
+import com.legendzero.exploration.util.AABB;
 import com.legendzero.exploration.world.World;
+import com.legendzero.exploration.world.WorldManager;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.vecmath.Vector2d;
 import org.lwjgl.LWJGLException;
@@ -33,46 +44,70 @@ import org.lwjgl.opengl.DisplayMode;
  *
  * @author CrypticStorm
  */
-public class Exploration {
+public class Exploration implements IExploration {
 
     private final int viewSize;
 
+    private boolean isRunning;
     private Player player;
-    private final List<World> worlds;
+    private final File baseDirectory;
+    private final IElementManager elementManager;
+    private final WorldManager worldManager;
+    private final List<IWorld> worlds;
     private RenderState state;
+    private ITrueTypeFont font;
 
-    private Exploration() throws LWJGLException {
+    private Exploration() {
+        this.isRunning = true;
         this.viewSize = 250;
+        this.baseDirectory = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
         this.state = RenderState.GAME;
-        this.worlds = new ArrayList<World>();
+
+        DefaultMaterials.init();
+
+        this.elementManager = new ElementManager(this);
+        this.elementManager.registerLoader(ElementLoader.class);
+        this.elementManager.loadElements(new File(this.baseDirectory, "elements"));
+        this.elementManager.enableElements();
+
+        this.worldManager = new WorldManager(new File(this.baseDirectory, "worlds"));
+        this.worlds = this.worldManager.loadWorlds();
 
         this.initDisplay();
         this.initGame();
         this.initControls();
-
-        this.runGame();
-
-        this.endGame();
     }
 
-    public Player getPlayer() {
+    public IPlayer getPlayer() {
         return this.player;
     }
 
-    public List<World> getWorlds() {
+    public IElementManager getElementManager() {
+        return this.elementManager;
+    }
+
+    public AABB getVisibleAABB() {
+        return this.state.getAABB();
+    }
+
+    public List<IWorld> getWorlds() {
         return this.worlds;
     }
 
-    public void addWorld(World world) {
+    public void addWorld(IWorld world) {
         this.worlds.add(world);
-    }
-
-    public RenderState getRenderState() {
-        return this.state;
     }
 
     public int getViewSize() {
         return this.viewSize;
+    }
+
+    public ITrueTypeFont getFont() {
+        return this.font;
+    }
+
+    public void stop() {
+        this.isRunning = false;
     }
 
     private void initDisplay() {
@@ -84,22 +119,30 @@ public class Exploration {
             e.printStackTrace();
             System.exit(1);
         }
+
+        font = new TrueTypeFont(new Font("Times New Roman", Font.PLAIN, 24), false);
     }
 
     private void initGame() {
-        this.player = new Player("CrypticStorm");
-        World world = new World(100, 100, new Vector2d(0.0, -0.1), new Vector2d(1.0, 1.0));
-        world.spawnEntity(player, world.getSpawnLocation().add(0.5, 0));
-        this.worlds.add(world);
+        this.player = new Player("CrypticStorm", true);
+        this.player.setFlying(true);
+        IWorld world;
+        if (this.worlds.isEmpty()) {
+            world = new World("Main", 100, 100, new Vector2d(0.0, -0.1), new Vector2d(0.5, 0.5));
+            this.worlds.add(world);
+        } else {
+            world = this.worlds.get(0);
+        }
+        world.spawnEntity(player, world.getSpawnLocation().copy().add(0.5, 0));
     }
 
     private void initControls() {
 
     }
 
-    private void runGame() {
-        while (!Display.isCloseRequested()) {
-            for(World world : this.worlds) {
+    public void runGame() {
+        while (!Display.isCloseRequested() && this.isRunning) {
+            for (IWorld world : this.worlds) {
                 world.update(this);
             }
             state.render(this);
@@ -108,20 +151,19 @@ public class Exploration {
         }
     }
 
-    private void endGame() {
+    public void endGame() {
         Display.destroy();
+
+        this.worldManager.saveWorlds(this.worlds);
     }
 
     public static void main(String[] args) {
         if (!loadNatives()) {
             System.exit(0);
         }
-        try {
-            Exploration game = new Exploration();
-        } catch (LWJGLException e) {
-            e.printStackTrace();
-            System.exit(0);
-        }
+        Exploration game = new Exploration();
+        game.runGame();
+        game.endGame();
     }
 
     private static boolean loadNatives() {

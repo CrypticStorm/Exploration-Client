@@ -16,11 +16,12 @@
  */
 package com.legendzero.exploration.control.controllers;
 
-import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.control.Controller;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.control.AbstractController;
 import com.legendzero.exploration.entity.Player;
-import com.legendzero.exploration.material.Material;
-import com.legendzero.exploration.material.Materials;
+import com.legendzero.exploration.util.AABB;
+import com.legendzero.exploration.util.Materials;
+import com.legendzero.exploration.util.material.Material;
 import javax.vecmath.Point2d;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -29,7 +30,7 @@ import org.lwjgl.opengl.Display;
  *
  * @author CrypticStorm
  */
-public class BlockController extends Controller {
+public class BlockController extends AbstractController {
 
     private final double maxReachDistance;
 
@@ -39,7 +40,7 @@ public class BlockController extends Controller {
     }
 
     @Override
-    public void update(Exploration game) {
+    public void update(IExploration game) {
         Material material = this.updateMaterial();
         this.interact(game, material);
 
@@ -54,18 +55,20 @@ public class BlockController extends Controller {
         return null;
     }
 
-    private void interact(Exploration game, Material material) {
+    private void interact(IExploration game, Material material) {
         if (material != null) {
             int x = Mouse.getX();
             int y = Mouse.getY();
 
             int oldRangeX = Display.getWidth();
             int oldRangeY = Display.getHeight();
-            double newRangeX = game.getRenderState().getMaxX() - game.getRenderState().getMinX();
-            double newRangeY = game.getRenderState().getMaxY() - game.getRenderState().getMinY();
 
-            double wx = (x * newRangeX) / oldRangeX + game.getRenderState().getMinX();
-            double wy = (y * newRangeY) / oldRangeY + game.getRenderState().getMinY();
+            AABB aabb = game.getVisibleAABB();
+            double newRangeX = aabb.getRight() - aabb.getLeft();
+            double newRangeY = aabb.getTop() - aabb.getBottom();
+
+            double wx = (x * newRangeX) / oldRangeX + aabb.getLeft();
+            double wy = (y * newRangeY) / oldRangeY + aabb.getBottom();
 
             if (this.player.getLocation().distanceSquared(new Point2d(wx, wy - this.player.getHeight() / 2)) < this.maxReachDistance * this.maxReachDistance) {
                 int ix = (int) wx;

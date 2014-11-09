@@ -14,35 +14,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.legendzero.exploration.material;
+package com.legendzero.exploration.materials;
 
+import com.legendzero.exploration.util.material.Material;
+import com.legendzero.exploration.util.Materials;
 import javax.vecmath.Color4f;
 
 /**
  *
  * @author CrypticStorm
  */
-public abstract class Material {
+public class MaterialStone extends Material {
 
-    private final Color4f color;
-
-    public Material(Color4f color) {
-        this.color = color;
+    static {
+        Materials.addMaterial(new MaterialStone());
     }
 
-    public abstract String getName();
-
-    public abstract String getTextureFile();
-
-    public Color4f getColor() {
-        return this.color;
+    public MaterialStone() {
+        super(new Color4f(0.5f, 0.5f, 0.5f, 1f));
     }
 
-    public boolean isSolid() {
-        return true;
+    @Override
+    public String getName() {
+        return "Stone";
     }
 
-    public boolean isLiquid() {
-        return false;
+    @Override
+    public String getTextureFile() {
+        return "stone";
     }
+
 }

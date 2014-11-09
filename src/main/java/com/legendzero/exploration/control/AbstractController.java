@@ -14,15 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.legendzero.exploration.option;
+package com.legendzero.exploration.control;
 
+import com.legendzero.exploration.api.control.IController;
 import com.legendzero.exploration.entity.Player;
 
 /**
  *
  * @author CrypticStorm
  */
-public interface OptionToggle {
+public abstract class AbstractController implements IController {
 
-    public void update(Player player);
+    protected final Player player;
+
+    public AbstractController(Player player) {
+        this.player = player;
+    }
+
+    public Player getPlayer() {
+        return this.player;
+    }
 }

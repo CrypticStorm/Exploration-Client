@@ -16,21 +16,24 @@
  */
 package com.legendzero.exploration.entity;
 
-import com.legendzero.exploration.Exploration;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.api.entity.IEntity;
+import com.legendzero.exploration.api.world.ITile;
+import com.legendzero.exploration.api.world.IWorld;
+import com.legendzero.exploration.util.AABB;
+import com.legendzero.exploration.util.IntersectData;
 import com.legendzero.exploration.util.Location;
-import com.legendzero.exploration.world.World;
+
 import java.util.LinkedList;
 import java.util.List;
 import javax.vecmath.Color4f;
-import javax.vecmath.Point2d;
-import javax.vecmath.Tuple2d;
 import javax.vecmath.Vector2d;
 
 /**
  *
  * @author CrypticStorm
  */
-public abstract class Entity {
+public abstract class Entity implements IEntity {
 
     private final Color4f color;
     private final String name;
@@ -55,126 +58,87 @@ public abstract class Entity {
         this.isOnGround = false;
     }
 
-    public void update(Exploration game) {
-        World world = this.location.getWorld();
+    @Override
+    public void update(IExploration game) {
+        this.isOnGround = false;
+        Vector2d prevVelocity = new Vector2d(this.getVelocity());
 
-        double vx = this.velocity.x;
-        double vy = this.velocity.y;
+        IWorld world = this.getLocation().getWorld();
+        IntersectData NO_COLLISION = new IntersectData(new Vector2d(0, 0), 1);
 
-        boolean down = vy < 0.0;
-        boolean up = vy > 0.0;
-        boolean left = vx < 0.0;
-        boolean right = vx > 0.0;
+        List<ITile> tiles = new LinkedList<>();
 
-        Location newLoc = new Location(world, this.location.getX() + vx, this.location.getY() + vy);
+        AABB i_aabb = new AABB(this).expand(this.getVelocity());
 
-        int ix1 = (int) (this.location.getX() - (this.width / 2) - 1);
-        int ix2 = (int) (this.location.getX() + (this.width / 2) - 0.0001) + 1;
-        int iy1 = (int) (this.location.getY() - 1);
-        int iy2 = (int) (this.location.getY() + this.height - 0.0001) + 1;
-
-        List<Tuple2d> horizontal = new LinkedList<Tuple2d>();
-        List<Tuple2d> vertical = new LinkedList<Tuple2d>();
-        Tuple2d corner = null;
-
-        if (right) {
-            if (up) {
-                if (world.getTile(ix2, iy2) == null || world.getTile(ix2, iy2).getType().isSolid()) {
-                    corner = new Point2d(ix2, iy2);
-                }
-            }
-            for (int y = iy1 + 1; y < iy2; y++) {
-                if (world.getTile(ix2, y) == null || world.getTile(ix2, y).getType().isSolid()) {
-                    vertical.add(new Point2d(ix2, y));
-                }
-            }
-        } else if (left) {
-            if (down) {
-                if (world.getTile(ix1, iy1) == null || world.getTile(ix1, iy1).getType().isSolid()) {
-                    corner = new Point2d(ix1, iy1);
-                }
-            }
-            for (int y = iy1 + 1; y < iy2; y++) {
-                if (world.getTile(ix1, y) == null || world.getTile(ix1, y).getType().isSolid()) {
-                    vertical.add(new Point2d(ix1, y));
+        for (int x = (int) Math.floor(i_aabb.getLeft()) - 1; x <= (int) Math.ceil(i_aabb.getRight()) + 1; x++) {
+            for (int y = (int) Math.floor(i_aabb.getBottom()) - 1; y <= (int) Math.ceil(i_aabb.getTop()) + 1; y++) {
+                ITile tile = world.getTile(x, y);
+                if (tile != null && tile.getType().isSolid()) {
+                    tiles.add(tile);
                 }
             }
         }
 
-        if (up) {
-            if (left) {
-                if (world.getTile(ix1, iy2) == null || world.getTile(ix1, iy2).getType().isSolid()) {
-                    corner = new Point2d(ix1, iy2);
+        while (true) {
+            ITile reactant = null;
+            IntersectData reaction = NO_COLLISION;
+            i_aabb = new AABB(this);
+
+            for (ITile current : tiles) {
+                AABB t_aabb = new AABB(current);
+                IntersectData collision = i_aabb.collide(t_aabb, this.getVelocity());
+                if (collision.getTime() < reaction.getTime()) {
+                    reaction = collision;
+                    reactant = current;
                 }
             }
-            for (int x = ix1 + 1; x < ix2; x++) {
-                if (world.getTile(x, iy2) == null || world.getTile(x, iy2).getType().isSolid()) {
-                    horizontal.add(new Point2d(x, iy2));
-                }
-            }
-        } else if (down) {
-            if (right) {
-                if (world.getTile(ix2, iy1) == null || world.getTile(ix2, iy1).getType().isSolid()) {
-                    corner = new Point2d(ix2, iy1);
-                }
-            }
-            for (int x = ix1 + 1; x < ix2; x++) {
-                if (world.getTile(x, iy1) == null || world.getTile(x, iy1).getType().isSolid()) {
-                    horizontal.add(new Point2d(x, iy1));
-                }
+
+            System.out.println(reaction.getNormal());
+            if (reactant == null) {
+                break;
+            } else {
+                this.onCollide(reactant, reaction);
             }
         }
+        System.out.println();
 
-        for (Tuple2d tuple : vertical) {
-            if (newLoc.getX() + this.width / 2 > tuple.x && newLoc.getX() - this.width / 2 < tuple.x + 1) {
-                if (right) {
-                    vx = tuple.x - (this.getLocation().getX() + this.width / 2);
-                } else if (left) {
-                    vx = tuple.x + 1 - (this.getLocation().getX() - this.width / 2);
-                }
-            }
+        this.getLocation().add(this.getVelocity());
+
+        AABB aabb = new AABB(this);
+        boolean[] collisions = aabb.bound(new AABB(this.getLocation().getWorld()));
+        if (collisions[0]) {
+            this.getVelocity().x = 0;
+            this.getLocation().setX(aabb.getMin().x + this.getWidth() / 2);
+        }
+        if (collisions[1]) {
+            this.getVelocity().x = 0;
+            this.getLocation().setX(aabb.getMin().x + this.getWidth() / 2);
+        }
+        if (collisions[2]) {
+            this.getVelocity().y = 0;
+            this.getLocation().setY(aabb.getMin().y);
+        }
+        if (collisions[3]) {
+            this.getVelocity().y = 0;
+            this.getLocation().setY(aabb.getMin().y);
         }
 
-        for (Tuple2d tuple : horizontal) {
-            if (newLoc.getY() + this.height > tuple.y && newLoc.getY() < tuple.y + 1) {
-                if (up) {
-                    vy = tuple.y - (this.getLocation().getY() + this.height);
-                } else if (down) {
-                    vy = tuple.y + 1 - this.getLocation().getY();
-                }
-            }
-        }
-
-        if (corner != null && vertical.isEmpty() && horizontal.isEmpty()) {
-            if (newLoc.getY() + this.height > corner.y && newLoc.getY() < corner.y + 1 && newLoc.getX() + (this.width / 2) > corner.x && newLoc.getX() - (this.width / 2) < corner.x + 1) {
-                if (up) {
-                    vy = corner.y - (this.getLocation().getY() + this.height);
-                } else if (down) {
-                    vy = corner.y + 1 - this.getLocation().getY();
-                }
-            }
-        }
-
-        if (this.velocity.y < 0.0 && vy == 0.0) {
+        if (prevVelocity.y <= 0 && this.getVelocity().y == 0) {
             this.isOnGround = true;
-        } else if (vy != 0.0) {
-            this.isOnGround = false;
         }
+    }
 
-        this.velocity.set(vx, vy);
-        this.getLocation().add(this.velocity);
+    public void onCollide(ITile other, IntersectData collision) {
+        Vector2d tempVelocity = new Vector2d(this.getVelocity());
+        tempVelocity.scale(collision.getTime());
+        this.getLocation().add(tempVelocity);
 
-        if (this.getLocation().getX() < this.width / 2) {
-            this.getLocation().setX(this.width / 2);
-        } else if (this.getLocation().getX() > world.getWidth() - this.width / 2) {
-            this.getLocation().setX(world.getWidth() - this.width / 2);
-        }
-        if (this.getLocation().getY() < 0.0) {
-            this.getLocation().setY(0.0);
-            this.isOnGround = true;
-        } else if (this.getLocation().getY() > world.getHeight() - this.height) {
-            this.getLocation().setY(world.getHeight() - this.height);
-        }
+        double remainingTime = 1.0 - collision.getTime();
+
+        double dot = remainingTime *
+                (this.getVelocity().x * collision.getNormal().y +
+                        this.getVelocity().y * collision.getNormal().x);
+        this.getVelocity().set(dot * collision.getNormal().y, dot * collision.getNormal().x);
     }
 
     public Location getLocation() {

@@ -16,8 +16,8 @@
  */
 package com.legendzero.exploration.control.controllers;
 
-import com.legendzero.exploration.Exploration;
-import com.legendzero.exploration.control.Controller;
+import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.control.AbstractController;
 import com.legendzero.exploration.entity.Player;
 import org.lwjgl.input.Mouse;
 
@@ -25,7 +25,7 @@ import org.lwjgl.input.Mouse;
  *
  * @author CrypticStorm
  */
-public class ZoomController extends Controller {
+public class ZoomController extends AbstractController {
 
     private final double minZoom = 10.0;
     private final double maxZoom = 200.0;
@@ -36,7 +36,7 @@ public class ZoomController extends Controller {
     }
 
     @Override
-    public void update(Exploration game) {
+    public void update(IExploration game) {
         if (Mouse.isButtonDown(2)) {
             this.player.resetViewSize();
         } else {
