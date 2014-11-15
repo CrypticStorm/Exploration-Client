@@ -17,7 +17,8 @@
 package com.legendzero.exploration.control.controllers;
 
 import com.legendzero.exploration.api.IExploration;
-import com.legendzero.exploration.control.AbstractController;
+import com.legendzero.exploration.api.entity.IPlayer;
+import com.legendzero.exploration.control.PlayerController;
 import com.legendzero.exploration.entity.Player;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +28,7 @@ import org.lwjgl.input.Keyboard;
  *
  * @author CrypticStorm
  */
-public class MovementController extends AbstractController {
+public class MovementController extends PlayerController {
 
     private final double maxX = 0.25;
     private final double maxY = 0.25;
@@ -35,7 +36,7 @@ public class MovementController extends AbstractController {
 
     private final Set<Integer> keysPressed;
 
-    public MovementController(Player player) {
+    public MovementController(IPlayer player) {
         super(player);
         this.keysPressed = new HashSet<>();
     }

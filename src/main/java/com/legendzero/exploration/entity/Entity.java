@@ -18,8 +18,10 @@ package com.legendzero.exploration.entity;
 
 import com.legendzero.exploration.api.IExploration;
 import com.legendzero.exploration.api.entity.IEntity;
-import com.legendzero.exploration.api.world.ITile;
+import com.legendzero.exploration.api.render.IMesh;
+import com.legendzero.exploration.api.tiles.ITile;
 import com.legendzero.exploration.api.world.IWorld;
+import com.legendzero.exploration.render.Mesh;
 import com.legendzero.exploration.util.AABB;
 import com.legendzero.exploration.util.IntersectData;
 import com.legendzero.exploration.util.Location;
@@ -29,33 +31,38 @@ import java.util.List;
 import javax.vecmath.Color4f;
 import javax.vecmath.Vector2d;
 
+import static org.lwjgl.opengl.GL11.*;
+
 /**
  *
  * @author CrypticStorm
  */
 public abstract class Entity implements IEntity {
 
-    private final Color4f color;
+    private final IMesh mesh;
     private final String name;
-    private final double MAX_HEALTH;
+    private double maxHealth;
     private double health;
 
     private final double width;
     private final double height;
 
+    private Location prevLocation;
     private Location location;
     private Vector2d velocity;
     private boolean isOnGround;
     private boolean isFlying;
 
     public Entity(Color4f color, String name, double hp, double width, double height) {
-        this.color = color;
+        this.mesh = new Mesh(4, GL_QUADS);
+        this.mesh.setColorBuffer(IMesh.getStaticFloatBuffer(color), 4);
         this.name = name;
-        this.MAX_HEALTH = this.health = hp;
+        this.maxHealth = this.health = hp;
         this.width = width;
         this.height = height;
         this.velocity = new Vector2d(0.0, 0.0);
         this.isOnGround = false;
+        this.prevLocation = null;
     }
 
     @Override
@@ -93,16 +100,14 @@ public abstract class Entity implements IEntity {
                 }
             }
 
-            System.out.println(reaction.getNormal());
             if (reactant == null) {
                 break;
             } else {
                 this.onCollide(reactant, reaction);
             }
         }
-        System.out.println();
 
-        this.getLocation().add(this.getVelocity());
+        this.setLocation(this.location.add(this.velocity));
 
         AABB aabb = new AABB(this);
         boolean[] collisions = aabb.bound(new AABB(this.getLocation().getWorld()));
@@ -141,6 +146,14 @@ public abstract class Entity implements IEntity {
         this.getVelocity().set(dot * collision.getNormal().y, dot * collision.getNormal().x);
     }
 
+    public void render(IExploration game) {
+        if (!this.location.equals(this.prevLocation)) {
+            this.mesh.setVertexBuffer(new AABB(this).getBuffer(), 3);
+        }
+        this.mesh.render(game);
+        this.prevLocation = this.location.copy();
+    }
+
     public Location getLocation() {
         return this.location;
     }
@@ -157,16 +170,16 @@ public abstract class Entity implements IEntity {
         this.velocity = velocity;
     }
 
-    public Color4f getColor() {
-        return this.color;
-    }
-
     public String getName() {
         return this.name;
     }
 
     public double getHealth() {
         return this.health;
+    }
+
+    public double getMaxHealth() {
+        return this.maxHealth;
     }
 
     public double getWidth() {
@@ -178,11 +191,11 @@ public abstract class Entity implements IEntity {
     }
 
     public double heal(double amount) {
-        return Math.min(this.health += amount, this.MAX_HEALTH);
+        return this.health = Math.min(this.health + amount, this.maxHealth);
     }
 
     public double damage(double amount) {
-        return this.health -= amount;
+        return this.health = Math.max(this.health - amount, 0);
     }
 
     public boolean isDamageable() {

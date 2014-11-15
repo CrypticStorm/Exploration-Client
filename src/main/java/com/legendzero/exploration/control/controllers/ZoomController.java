@@ -17,7 +17,8 @@
 package com.legendzero.exploration.control.controllers;
 
 import com.legendzero.exploration.api.IExploration;
-import com.legendzero.exploration.control.AbstractController;
+import com.legendzero.exploration.api.entity.IPlayer;
+import com.legendzero.exploration.control.PlayerController;
 import com.legendzero.exploration.entity.Player;
 import org.lwjgl.input.Mouse;
 
@@ -25,13 +26,13 @@ import org.lwjgl.input.Mouse;
  *
  * @author CrypticStorm
  */
-public class ZoomController extends AbstractController {
+public class ZoomController extends PlayerController {
 
     private final double minZoom = 10.0;
     private final double maxZoom = 200.0;
     private final double scrollSpeed = 5.0;
 
-    public ZoomController(Player player) {
+    public ZoomController(IPlayer player) {
         super(player);
     }
 

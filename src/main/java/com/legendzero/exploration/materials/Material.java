@@ -16,35 +16,32 @@
  */
 package com.legendzero.exploration.materials;
 
-import com.legendzero.exploration.util.Materials;
 import javax.vecmath.Color4f;
 
 /**
  *
  * @author CrypticStorm
  */
-public class MaterialAir extends Material {
+public abstract class Material implements com.legendzero.exploration.api.item.IMaterial {
 
-    static {
-        Materials.addMaterial(new MaterialAir());
+    private final Color4f color;
+
+    public Material(Color4f color) {
+        this.color = color;
     }
 
-    public MaterialAir() {
-        super(new Color4f(1f, 1f, 1f, 1f));
+    @Override
+    public Color4f getColor() {
+        return this.color;
     }
 
     @Override
     public boolean isSolid() {
+        return true;
+    }
+
+    @Override
+    public boolean isLiquid() {
         return false;
-    }
-
-    @Override
-    public String getName() {
-        return "Air";
-    }
-
-    @Override
-    public String getTextureFile() {
-        return "air";
     }
 }

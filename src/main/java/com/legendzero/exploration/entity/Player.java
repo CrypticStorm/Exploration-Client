@@ -19,11 +19,14 @@ package com.legendzero.exploration.entity;
 import com.legendzero.exploration.api.IExploration;
 import com.legendzero.exploration.api.control.IController;
 import com.legendzero.exploration.api.entity.IPlayer;
+import com.legendzero.exploration.api.gui.IGuiComponent;
 import com.legendzero.exploration.control.controllers.BlockController;
 import com.legendzero.exploration.control.controllers.MovementController;
 import com.legendzero.exploration.control.controllers.OptionController;
 import com.legendzero.exploration.control.controllers.ScreenShotController;
 import com.legendzero.exploration.control.controllers.ZoomController;
+import com.legendzero.exploration.gui.GuiHealthbar;
+
 import java.util.HashSet;
 import java.util.Set;
 import javax.vecmath.Color4f;
@@ -35,6 +38,7 @@ import javax.vecmath.Color4f;
 public class Player extends Entity implements IPlayer {
 
     private final Set<IController> controllers;
+    private final Set<IGuiComponent> gui_components;
     private final double defaultViewSize;
     private double viewSize;
     private int money;
@@ -42,6 +46,7 @@ public class Player extends Entity implements IPlayer {
     public Player(String name, boolean controlled) {
         super(new Color4f(1.0f, 0.0f, 0.0f, 1.0f), name, 100.0, 0.6, 0.8);
         this.controllers = new HashSet<>();
+        this.gui_components = new HashSet<>();
         this.defaultViewSize = this.viewSize = 100;
         this.money = 0;
         if (controlled) {
@@ -51,6 +56,7 @@ public class Player extends Entity implements IPlayer {
             this.addController(new ScreenShotController(this));
             this.addController(new OptionController(this));
         }
+        this.gui_components.add(new GuiHealthbar(this));
     }
 
     @Override
@@ -58,7 +64,16 @@ public class Player extends Entity implements IPlayer {
         for (IController controller : this.controllers) {
             controller.update(game);
         }
+        if (this.getHealth() > 0.1)
+            this.damage(0.1);
         super.update(game);
+    }
+
+    @Override
+    public void renderGUI(IExploration game) {
+        for (IGuiComponent guiComponent : this.gui_components) {
+            guiComponent.render(game);
+        }
     }
 
     public final Set<IController> getControllers() {

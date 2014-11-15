@@ -16,6 +16,8 @@
  */
 package com.legendzero.exploration.world;
 
+import com.legendzero.exploration.tiles.Tile;
+
 import java.util.Random;
 import javax.vecmath.Point2d;
 import javax.vecmath.Vector2d;

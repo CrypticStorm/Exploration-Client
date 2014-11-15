@@ -16,8 +16,9 @@
  */
 package com.legendzero.exploration.world;
 
-import com.legendzero.exploration.api.world.ITile;
+import com.legendzero.exploration.api.tiles.ITile;
 import com.legendzero.exploration.api.world.IWorld;
+import com.legendzero.exploration.tiles.Tile;
 import com.legendzero.exploration.util.Location;
 import com.legendzero.exploration.util.Materials;
 import java.io.File;

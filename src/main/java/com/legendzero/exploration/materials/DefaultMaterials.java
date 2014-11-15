@@ -17,7 +17,6 @@
 package com.legendzero.exploration.materials;
 
 import com.legendzero.exploration.util.Materials;
-import com.legendzero.exploration.util.material.Material;
 
 /**
  *

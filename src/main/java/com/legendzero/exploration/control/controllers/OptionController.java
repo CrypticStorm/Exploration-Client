@@ -17,8 +17,9 @@
 package com.legendzero.exploration.control.controllers;
 
 import com.legendzero.exploration.api.IExploration;
+import com.legendzero.exploration.api.entity.IPlayer;
 import com.legendzero.exploration.api.option.OptionToggle;
-import com.legendzero.exploration.control.AbstractController;
+import com.legendzero.exploration.control.PlayerController;
 import com.legendzero.exploration.entity.Player;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,12 +31,12 @@ import org.lwjgl.input.Keyboard;
  *
  * @author CrypticStorm
  */
-public class OptionController extends AbstractController {
+public class OptionController extends PlayerController {
 
     private final Set<Integer> keysPressed;
     private final Map<Integer, OptionToggle> options;
 
-    public OptionController(Player player) {
+    public OptionController(IPlayer player) {
         super(player);
         this.keysPressed = new HashSet<>();
         this.options = new HashMap<>();

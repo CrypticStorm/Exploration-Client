@@ -16,7 +16,6 @@
  */
 package com.legendzero.exploration.materials;
 
-import com.legendzero.exploration.util.material.Material;
 import com.legendzero.exploration.util.Materials;
 import javax.vecmath.Color4f;
 

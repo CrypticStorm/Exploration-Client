@@ -17,11 +17,13 @@
 package com.legendzero.exploration.control.controllers;
 
 import com.legendzero.exploration.api.IExploration;
-import com.legendzero.exploration.control.AbstractController;
-import com.legendzero.exploration.entity.Player;
+import com.legendzero.exploration.api.entity.IPlayer;
+import com.legendzero.exploration.api.item.IMaterial;
+import com.legendzero.exploration.api.tiles.ITile;
+import com.legendzero.exploration.control.PlayerController;
 import com.legendzero.exploration.util.AABB;
 import com.legendzero.exploration.util.Materials;
-import com.legendzero.exploration.util.material.Material;
+
 import javax.vecmath.Point2d;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -30,23 +32,23 @@ import org.lwjgl.opengl.Display;
  *
  * @author CrypticStorm
  */
-public class BlockController extends AbstractController {
+public class BlockController extends PlayerController {
 
     private final double maxReachDistance;
 
-    public BlockController(Player player) {
+    public BlockController(IPlayer player) {
         super(player);
         this.maxReachDistance = 4.0;
     }
 
     @Override
     public void update(IExploration game) {
-        Material material = this.updateMaterial();
+        IMaterial material = this.updateMaterial();
         this.interact(game, material);
 
     }
 
-    private Material updateMaterial() {
+    private IMaterial updateMaterial() {
         if (Mouse.isButtonDown(0)) {
             return Materials.getMaterial("Air");
         } else if (Mouse.isButtonDown(1)) {
@@ -55,7 +57,7 @@ public class BlockController extends AbstractController {
         return null;
     }
 
-    private void interact(IExploration game, Material material) {
+    private void interact(IExploration game, IMaterial material) {
         if (material != null) {
             int x = Mouse.getX();
             int y = Mouse.getY();
@@ -73,8 +75,10 @@ public class BlockController extends AbstractController {
             if (this.player.getLocation().distanceSquared(new Point2d(wx, wy - this.player.getHeight() / 2)) < this.maxReachDistance * this.maxReachDistance) {
                 int ix = (int) wx;
                 int iy = (int) wy;
-
-                this.player.getLocation().getWorld().setTile(ix, iy, material);
+                ITile tile = this.player.getLocation().getWorld().getTile(ix, iy);
+                if (!new AABB(this.player).collidesStrict(new AABB(tile))) {
+                    tile.setType(material);
+                }
             }
         }
 

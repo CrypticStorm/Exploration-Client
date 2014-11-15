@@ -18,20 +18,25 @@ package com.legendzero.exploration.world;
 
 import com.legendzero.exploration.api.IExploration;
 import com.legendzero.exploration.api.entity.IEntity;
+import com.legendzero.exploration.api.item.IMaterial;
 import com.legendzero.exploration.api.physics.IPhysics;
-import com.legendzero.exploration.api.world.ITile;
+import com.legendzero.exploration.api.tiles.ITile;
 import com.legendzero.exploration.api.world.IWorld;
 import com.legendzero.exploration.noise.LifeNoise;
 import com.legendzero.exploration.noise.Noise;
 import com.legendzero.exploration.physics.WorldGravityPhysics;
 import com.legendzero.exploration.physics.WorldUpdatePhysics;
+import com.legendzero.exploration.tiles.Tile;
+import com.legendzero.exploration.util.AABB;
 import com.legendzero.exploration.util.Direction;
 import com.legendzero.exploration.util.Location;
 import com.legendzero.exploration.util.Materials;
-import com.legendzero.exploration.util.material.Material;
+import static org.lwjgl.opengl.GL11.*;
+
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import javax.vecmath.Color4f;
 import javax.vecmath.Vector2d;
 
 /**
@@ -68,7 +73,6 @@ public class World implements IWorld {
         this.entities = new HashSet<>();
         this.physics = new HashSet<>();
         this.addDefaultPhysics();
-        this.fixTiles();
     }
 
     public World(WorldData data) {
@@ -83,7 +87,6 @@ public class World implements IWorld {
         this.entities = new HashSet<>();
         this.physics = new HashSet<>();
         this.addDefaultPhysics();
-        this.fixTiles();
     }
 
     private void addDefaultPhysics() {
@@ -98,7 +101,7 @@ public class World implements IWorld {
                 tile.setLocation(new Location(this, tile.getLocation().getX(), tile.getLocation().getY()));
                 if (tile.getType().isSolid()) {
                     for (Direction dir : Direction.values()) {
-                        ITile tile2 = tile.getAdjancent(dir);
+                        ITile tile2 = tile.getAdjacent(dir);
                         if (tile2 == null) {
                             tile.setAdjacency(dir, true);
                         } else if (!tile2.getType().isSolid()) {
@@ -153,15 +156,15 @@ public class World implements IWorld {
         }
     }
 
-    public void setTile(int x, int y, Material material) {
+    public void setTile(int x, int y, IMaterial material) {
         if (x >= 0 && x < this.width && y >= 0 && y < this.height && material != null) {
             ITile tile = this.tiles[x][y];
-            Material oldMaterial = tile.getType();
+            IMaterial oldMaterial = tile.getType();
             this.tiles[x][y] = new Tile(material, new Location(this, x, y));
             boolean solid = material.isSolid();
             if (oldMaterial.isSolid() != solid) {
                 for (Direction dir : Direction.values()) {
-                    ITile tile2 = tile.getAdjancent(dir);
+                    ITile tile2 = tile.getAdjacent(dir);
                     if (tile2 == null) {
                         tile.setAdjacency(dir, !solid);
                     } else {
@@ -172,10 +175,6 @@ public class World implements IWorld {
                 }
             }
         }
-    }
-
-    public boolean isTileSolid(int x, int y) {
-        return x < 0 || x >= this.width || y < 0 || y >= this.height || this.tiles[x][y].getType().isSolid();
     }
 
     public Location getSpawnLocation() {
@@ -230,5 +229,42 @@ public class World implements IWorld {
 
         this.spawnLoc = best;
         return tileMap;
+    }
+
+    @Override
+    public void render(IExploration game) {
+        ITile[][] map = this.getMap();
+
+        AABB render_aabb = game.getVisibleAABB();
+        int xMin = Math.max((int) render_aabb.getLeft(), 0);
+        int xMax = Math.min((int) Math.ceil(render_aabb.getRight()), this.getWidth());
+        int yMin = Math.max((int) render_aabb.getBottom(), 0);
+        int yMax = Math.min((int) Math.ceil(render_aabb.getTop()), this.getHeight());
+
+        glPushMatrix();
+        for (int i = xMin; i < xMax; i++) {
+            for (int j = yMin; j < yMax; j++) {
+                map[i][j].render(game);
+            }
+        }
+
+        for (IEntity entity : this.getEntities()) {
+            entity.render(game);
+        }
+        glPopMatrix();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getName().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof IWorld) {
+            IWorld world = (IWorld) o;
+            return this.getName().equals(world.getName());
+        }
+        return false;
     }
 }

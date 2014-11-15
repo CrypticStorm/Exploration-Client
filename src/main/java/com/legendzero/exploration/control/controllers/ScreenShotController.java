@@ -17,7 +17,8 @@
 package com.legendzero.exploration.control.controllers;
 
 import com.legendzero.exploration.api.IExploration;
-import com.legendzero.exploration.control.AbstractController;
+import com.legendzero.exploration.api.entity.IPlayer;
+import com.legendzero.exploration.control.PlayerController;
 import com.legendzero.exploration.entity.Player;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -36,13 +37,13 @@ import org.lwjgl.opengl.GL11;
  *
  * @author CrypticStorm
  */
-public class ScreenShotController extends AbstractController {
+public class ScreenShotController extends PlayerController {
 
     private final DateFormat format;
     private final File folder;
     private long lastScreenshot = 0L;
 
-    public ScreenShotController(Player player) {
+    public ScreenShotController(IPlayer player) {
         super(player);
         this.format = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss'.png'");
         this.folder = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath() + File.separator + "screenshots");

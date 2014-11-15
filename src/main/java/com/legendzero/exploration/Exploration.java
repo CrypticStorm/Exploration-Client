@@ -21,10 +21,8 @@ import com.legendzero.exploration.api.element.ElementManager;
 import com.legendzero.exploration.api.element.IElementManager;
 import com.legendzero.exploration.api.element.loader.ElementLoader;
 import com.legendzero.exploration.api.entity.IPlayer;
-import com.legendzero.exploration.api.font.ITrueTypeFont;
 import com.legendzero.exploration.api.world.IWorld;
 import com.legendzero.exploration.entity.Player;
-import com.legendzero.exploration.font.TrueTypeFont;
 import com.legendzero.exploration.materials.DefaultMaterials;
 import com.legendzero.exploration.render.RenderState;
 import com.legendzero.exploration.util.AABB;
@@ -39,6 +37,7 @@ import javax.vecmath.Vector2d;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import org.newdawn.slick.TrueTypeFont;
 
 /**
  *
@@ -55,9 +54,11 @@ public class Exploration implements IExploration {
     private final WorldManager worldManager;
     private final List<IWorld> worlds;
     private RenderState state;
-    private ITrueTypeFont font;
+    private TrueTypeFont font;
 
     private Exploration() {
+        this.initDisplay();
+
         this.isRunning = true;
         this.viewSize = 250;
         this.baseDirectory = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
@@ -73,7 +74,6 @@ public class Exploration implements IExploration {
         this.worldManager = new WorldManager(new File(this.baseDirectory, "worlds"));
         this.worlds = this.worldManager.loadWorlds();
 
-        this.initDisplay();
         this.initGame();
         this.initControls();
     }
@@ -102,7 +102,7 @@ public class Exploration implements IExploration {
         return this.viewSize;
     }
 
-    public ITrueTypeFont getFont() {
+    public TrueTypeFont getFont() {
         return this.font;
     }
 

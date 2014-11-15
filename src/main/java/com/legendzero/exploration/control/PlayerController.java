@@ -17,21 +17,22 @@
 package com.legendzero.exploration.control;
 
 import com.legendzero.exploration.api.control.IController;
+import com.legendzero.exploration.api.entity.IPlayer;
 import com.legendzero.exploration.entity.Player;
 
 /**
  *
  * @author CrypticStorm
  */
-public abstract class AbstractController implements IController {
+public abstract class PlayerController implements IController {
 
-    protected final Player player;
+    protected final IPlayer player;
 
-    public AbstractController(Player player) {
+    public PlayerController(IPlayer player) {
         this.player = player;
     }
 
-    public Player getPlayer() {
+    public IPlayer getPlayer() {
         return this.player;
     }
 }
