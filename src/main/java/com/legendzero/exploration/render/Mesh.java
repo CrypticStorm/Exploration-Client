@@ -2,21 +2,26 @@ package com.legendzero.exploration.render;
 
 import com.legendzero.exploration.api.IExploration;
 import com.legendzero.exploration.api.render.IMesh;
-import static org.lwjgl.opengl.GL11.*;
 
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 
+import static org.lwjgl.opengl.GL11.*;
+
 public class Mesh implements IMesh {
 
     private DoubleBuffer vertexBuffer;
-    private int vertexSize;
     private FloatBuffer colorBuffer;
-    private int colorSize;
+    private DoubleBuffer normalBuffer;
+    private DoubleBuffer texCoordBuffer;
     private int itemSize;
     private int beginMode;
 
     public Mesh(int itemSize, int beginMode) {
+        this.vertexBuffer = null;
+        this.colorBuffer = null;
+        this.normalBuffer = null;
+        this.texCoordBuffer = null;
         this.itemSize = itemSize;
         this.beginMode = beginMode;
     }
@@ -28,17 +33,11 @@ public class Mesh implements IMesh {
 
     @Override
     public void setVertexBuffer(DoubleBuffer buffer, int size) {
-        if (this.itemSize * size == buffer.limit()) {
+        if (buffer.limit() % this.itemSize == 0) {
             this.vertexBuffer = buffer;
-            this.vertexSize = size;
         } else {
             throw new IllegalArgumentException("Invalid buffer dimensions.");
         }
-    }
-
-    @Override
-    public int getVertexSize() {
-        return this.vertexSize;
     }
 
     @Override
@@ -48,27 +47,49 @@ public class Mesh implements IMesh {
 
     @Override
     public void setColorBuffer(FloatBuffer buffer, int size) {
-        if (this.itemSize * size == buffer.limit()) {
+        if (buffer.limit() % this.itemSize == 0) {
             this.colorBuffer = buffer;
-            this.colorSize = size;
         } else {
             throw new IllegalArgumentException("Invalid buffer dimensions.");
         }
     }
 
     @Override
-    public int getColorSize() {
-        return this.colorSize;
+    public DoubleBuffer getNormalBuffer() {
+        return this.normalBuffer;
+    }
+
+    @Override
+    public void setNormalBuffer(DoubleBuffer buffer, int size) {
+        if (buffer.limit() % this.itemSize == 0) {
+            this.normalBuffer = buffer;
+        } else {
+            throw new IllegalArgumentException("Invalid buffer dimensions.");
+        }
+    }
+
+    @Override
+    public DoubleBuffer getTexCoordBuffer() {
+        return this.texCoordBuffer;
+    }
+
+    @Override
+    public void setTexCoordBuffer(DoubleBuffer buffer, int size) {
+        if (buffer.limit() % this.itemSize == 0) {
+            this.texCoordBuffer = buffer;
+        } else {
+            throw new IllegalArgumentException("Invalid buffer dimensions.");
+        }
     }
 
     @Override
     public int getItemSize() {
-        return 0;
+        return this.itemSize;
     }
 
     @Override
-    public void setItemSize() {
-
+    public void setItemSize(int itemSize) {
+        this.itemSize = itemSize;
     }
 
     @Override
@@ -83,16 +104,45 @@ public class Mesh implements IMesh {
 
     @Override
     public void render(IExploration game) {
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_COLOR_ARRAY);
+        if (this.vertexBuffer != null) {
+            glEnableClientState(GL_VERTEX_ARRAY);
+        }
+        if (this.colorBuffer != null) {
+            glEnableClientState(GL_COLOR_ARRAY);
+        }
+        if (this.normalBuffer != null) {
+            glEnableClientState(GL_NORMAL_ARRAY);
+        }
+        if (this.texCoordBuffer != null) {
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        }
 
-        glVertexPointer(this.vertexSize, 0, this.vertexBuffer);
-        glColorPointer(this.colorSize, 0, this.colorBuffer);
+        if (this.vertexBuffer != null) {
+            glVertexPointer(this.vertexBuffer.limit() / this.itemSize, 0, this.vertexBuffer);
+        }
+        if (this.colorBuffer != null) {
+            glColorPointer(this.colorBuffer.limit() / this.itemSize, 0, this.colorBuffer);
+        }
+        if (this.normalBuffer != null) {
+            glNormalPointer(this.normalBuffer.limit() / this.itemSize, this.normalBuffer);
+        }
+        if (this.texCoordBuffer != null) {
+            glTexCoordPointer(this.texCoordBuffer.limit() / this.itemSize, 0, this.texCoordBuffer);
+        }
 
         glDrawArrays(this.beginMode, 0, this.itemSize);
 
-        glDisableClientState(GL_COLOR_ARRAY);
-        glDisableClientState(GL_VERTEX_ARRAY);
-
+        if (this.vertexBuffer != null) {
+            glDisableClientState(GL_VERTEX_ARRAY);
+        }
+        if (this.colorBuffer != null) {
+            glDisableClientState(GL_COLOR_ARRAY);
+        }
+        if (this.normalBuffer != null) {
+            glDisableClientState(GL_NORMAL_ARRAY);
+        }
+        if (this.texCoordBuffer != null) {
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        }
     }
 }

@@ -35,6 +35,10 @@
             <id>nifty-maven-repo.sourceforge.net</id>
             <url>http://nifty-gui.sourceforge.net/nifty-maven-repo</url>
         </repository>
+        <repository>
+            <id>clojars</id>
+            <url>http://clojars.org/repo/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -67,6 +71,11 @@
             <groupId>slick</groupId>
             <artifactId>slick</artifactId>
             <version>${slick.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>kryonet</groupId>
+            <artifactId>kryonet</artifactId>
+            <version>2.21</version>
         </dependency>
     </dependencies>
 
